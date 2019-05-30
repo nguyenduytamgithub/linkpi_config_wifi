@@ -2,22 +2,6 @@
 
 A Node application which makes connecting your RaspberryPi to your home wifi easier
 
-## Intro
-
-When unable to connect to a wifi network, this service will turn the RPI into a wireless AP. This allows us to connect to it via a phone or other device and configure our home wifi network (for example).
-
-Once configured, it prompts the PI to reboot with the appropriate wifi credentials. If this process fails, it immediately re-enables the PI as an AP which can be configurable again.
-
-This project broadly follows these [instructions](http://www.maketecheasier.com/set-up-raspberry-pi-as-wireless-access-point/) in setting up a RaspberryPi as a wireless AP.
-
-## Requirements
-
-The NodeJS modules required are pretty much just `underscore`, `async`, and `express`. 
-
-The web application requires `angular` and `font-awesome` to render correctly. To make the deployment of this easy, one of the other requirements is `bower`.
-
-If you do not have `bower` installed already, you can install it globally by running: `sudo npm install bower -g`.
-
 ## Install
 
 ```sh
@@ -29,24 +13,6 @@ $sudo npm run-script provision
 $sudo npm start
 ```
 
-Now lets check to see if you have `dhcpcd` installed on your os, if you do - we have one more small step.
-
-Run `which dhcpcd` on your pi, if this returns any string (like `/sbin/dhcpcd`) then we need to add one line to the `dhcpcd.conf` file asking it to ignore the wireless interface that we are using for the AP.
-
-Add this to the very begenning of `/etc/dhcpcd.conf` (substitute your wifi interface for wlan0):
-```
-denyinterfaces wlan0
-```
-
-If you are into quick one-liners you can do this to prepend the line to the file.
-
-```
-echo "denyinterfaces wlan0" | cat - /etc/dhcpcd.conf > /tmp/out && sudo mv /tmp/out /etc/dhcpcd.conf
-```
-
-## Setup the app as a service
-
-There is a startup script included to make the server starting and stopping easier. Do remember that the application is assumed to be installed under `/home/pi/raspberry-wifi-conf`. Feel free to change this in the `assets/init.d/raspberry-wifi-conf` file.
 
 ```sh
 $sudo cp assets/init.d/raspberry-wifi-conf /etc/init.d/raspberry-wifi-conf 
@@ -54,18 +20,8 @@ $sudo chmod +x /etc/init.d/raspberry-wifi-conf
 $sudo update-rc.d raspberry-wifi-conf defaults
 ```
 
-### Gotchas
-
 #### `hostapd`
 
-The `hostapd` application does not like to behave itself on some wifi adapters (RTL8192CU et al). This link does a good job explaining the issue and the remedy: [Edimax Wifi Issues](http://willhaley.com/blog/raspberry-pi-hotspot-ew7811un-rtl8188cus/). The gist of what you need to do is as follows:
-
-```
-# run iw to detect if you have a rtl871xdrv or nl80211 driver
-$iw list
-```
-
-If the above says `nl80211 not found.` it means you are running the `rtl871xdrv` driver and probably need to update the `hostapd` binary as follows:
 ```
 $cd raspberry-wifi-conf
 $sudo mv /usr/sbin/hostapd /usr/sbin/hostapd.OLD
@@ -73,17 +29,10 @@ $sudo mv assets/bin/hostapd.rtl871xdrv /usr/sbin/hostapd
 $sudo chmod 755 /usr/sbin/hostapd
 ```
 
-Note that the `wifi_driver_type` config variable is defaulted to the `nl80211` driver. However, if `iw list` fails on the app startup, it will automatically set the driver type of `rtl871xdrv`. Remember that even though you do not need to update the config / default value - you will need to use the updated `hostapd` binary bundled with this app.
-
 #### `dhcpcd` 
-
-Latest versions of raspbian use dhcpcd to manage network interfaces, since we are running our own dhcp server, if you have dhcpcd installed - make sure you deny the wifi interface as described in the installation section. 
-
-TODO: Handle this automatically.
 
 ## Usage
 
-This is approximately what occurs when we run this app:
 
 1. Check to see if we are connected to a wifi AP
 2. If connected to a wifi, do nothing -> exit
@@ -121,13 +70,3 @@ Step 3: Select your home (or whatever) network, punch in the wifi passcode if an
 
 ## Testing
 
-TODO
-
-## TODO
-
-1. Automate the deployment of alternate `hostapd` application
-2. Automate provisioning of the application dependencies
-3. Make the running of scripts cleaner and more easy to read
-4. ifup should never be allowed to fail... same w/ the "start" pieces of various services. Perhaps we need to tease the restart into stop and start and allow the stop to fail.
-5. Add tests
-6. Add travis ci / coveralls hook(s)
