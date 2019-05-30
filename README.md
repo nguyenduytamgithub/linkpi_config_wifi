@@ -1,8 +1,8 @@
-# raspberry-wifi-conf
+# linkpi_smart_wifi
 
 A Node application which makes connecting your RaspberryPi to your home wifi easier
 
-## Why?
+## Intro
 
 When unable to connect to a wifi network, this service will turn the RPI into a wireless AP. This allows us to connect to it via a phone or other device and configure our home wifi network (for example).
 
